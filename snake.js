@@ -3,18 +3,19 @@ const display = document.getElementById("display");
 const score = document.getElementById("score");
 var context = canvas.getContext("2d");
 
+let startTime = Date.now();
+let deltaTime = Date.now();
 let x = 3;
 let y = 1;
 let dir = "ArrowRight";
 let scale = 20;
+let userInputs = [];
+let paused = false;
 var snake = {
   img: null,
-  x: 0,
-  y: 0,
-  width: 28,
-  height: 42,
-  currentframe: 0,
-  totalframes: 6,
+  directon: "ArrowRight",
+  speed: 8,
+  tailDirection: null,
   snakeArr: [
     { x: x, y, y },
     { x: x - 1, y, y },
@@ -34,6 +35,8 @@ let prevX = snake.snakeArr[0].x;
 let prevY = snake.snakeArr[0].y;
 let randx = Math.round((Math.random() * canvas.width) / scale - 1);
 let randy = Math.round((Math.random() * canvas.height) / scale - 1);
+let oldrandx = 0;
+let oldrandy = 0;
 const canvasWdith = Math.floor(canvas.width / scale) - 1;
 const canvasHeight = Math.floor(canvas.height / scale) - 1;
 
@@ -50,100 +53,100 @@ function gameOver(newPos) {
   return isSameIndex;
 }
 
+let accDistance = 0;
 function gameLoop() {
   prevX = snake.snakeArr[0].x;
   prevY = snake.snakeArr[0].y;
-  console.log(dir);
-  switch (dir) {
-    case "ArrowUp":
-      if (
-        snake.snakeArr[1].x === snake.snakeArr[0].x &&
-        (snake.snakeArr[1].y === snake.snakeArr[0].y - 1 ||
-          (snake.snakeArr[0].y === 0 && snake.snakeArr[1].y === canvasHeight))
-      ) {
-        prevY += 1;
-        y += 1;
-      } else {
+  const distance = (deltaTime / 1000) * snake.speed;
+  accDistance += distance;
+  if (accDistance > 1) {
+    let firstKey = userInputs.shift();
+    switch (firstKey) {
+      case "ArrowUp":
+        if (snake.directon !== "ArrowDown") {
+          snake.directon = firstKey;
+        }
+        break;
+      case "ArrowDown":
+        if (snake.directon !== "ArrowUp") {
+          snake.directon = firstKey;
+        }
+        break;
+      case "ArrowRight":
+        if (snake.directon !== "ArrowLeft") {
+          snake.directon = firstKey;
+        }
+        break;
+      case "ArrowLeft":
+        if (snake.directon !== "ArrowRight") {
+          snake.directon = firstKey;
+        }
+        break;
+      case " ":
+        accDistance = 0;
+        paused = !paused;
+        break;
+    }
+    if (paused) return;
+    switch (snake.directon) {
+      case "ArrowUp":
         prevY -= 1;
-        y -= 1;
-      }
-
-      break;
-    case "ArrowDown":
-      if (
-        snake.snakeArr[1].x === snake.snakeArr[0].x &&
-        (snake.snakeArr[1].y === snake.snakeArr[0].y + 1 ||
-          (snake.snakeArr[0].y === canvasHeight && snake.snakeArr[1].y === 0))
-      ) {
-        prevY -= 1;
-        y -= 1;
-      } else {
+        break;
+      case "ArrowDown":
         prevY += 1;
-        y += 1;
-      }
-      // snake.snakeArr[0].y = y;
-      break;
-    case "ArrowRight":
-      if (
-        snake.snakeArr[1].y === snake.snakeArr[0].y &&
-        (snake.snakeArr[1].x === snake.snakeArr[0].x + 1 ||
-          (snake.snakeArr[0].x === canvasWdith && snake.snakeArr[1].x === 0))
-      ) {
-        prevX -= 1;
-        x -= 1;
-      } else {
+        break;
+      case "ArrowRight":
         prevX += 1;
-        x += 1;
-      }
-      // snake.snakeArr[0].x = x;
-      break;
-    case "ArrowLeft":
-      if (
-        snake.snakeArr[1].y === snake.snakeArr[0].y &&
-        (snake.snakeArr[1].x == snake.snakeArr[0].x - 1 ||
-          (snake.snakeArr[0].x === 0 && snake.snakeArr[1].x === canvasWdith))
-      ) {
-        prevX += 1;
-        x += 1;
-      } else {
+        break;
+      case "ArrowLeft":
         prevX -= 1;
-        x -= 1;
-      }
-      // snake.snakeArr[0].x = x;
-      break;
-    default:
-      return;
-  }
+        break;
+      default:
+        return;
+    }
 
-  // for(let i = 0; i)
+    // for(let i = 0; i)
 
-  //loop again from the other side of canvas
-  if (canvas.height / scale <= prevY) {
-    prevY = 0;
-  }
-  if (0 > prevY) {
-    prevY = canvasHeight;
-  }
-  if (canvas.width / scale <= prevX) {
-    prevX = 0;
-  }
-  if (0 > prevX) {
-    prevX = canvasWdith;
-  }
+    //loop again from the other side of canvas
+    if (canvas.height / scale <= prevY) {
+      prevY = 0;
+    }
+    if (0 > prevY) {
+      prevY = canvasHeight;
+    }
+    if (canvas.width / scale <= prevX) {
+      prevX = 0;
+    }
+    if (0 > prevX) {
+      prevX = canvasWdith;
+    }
 
-  let newPos = { x: prevX, y: prevY };
-
-  if (gameOver(newPos)) {
-    // alert("Game over");
-    resetSnake();
-  } else {
-    snake.snakeArr.pop();
-    snake.snakeArr.unshift(newPos);
+    let newPos = { x: prevX, y: prevY };
+    if (gameOver(newPos)) {
+      // alert("Game over");
+      resetSnake();
+    } else {
+      snake.snakeArr.pop();
+      snake.snakeArr.unshift(newPos);
+    }
+    accDistance -= 1;
   }
 }
 
 document.addEventListener("keydown", (ev) => {
   dir = ev.key;
+  if (
+    ev.key == "ArrowRight" ||
+    ev.key == "ArrowDown" ||
+    ev.key == "ArrowLeft" ||
+    ev.key == "ArrowUp" ||
+    ev.key == " "
+  ) {
+    if (userInputs.length > 2) {
+      userInputs = userInputs.slice(0, 3);
+    }
+    userInputs.push(dir);
+  }
 });
 
 function drawgrid() {
@@ -165,8 +168,13 @@ function drawgrid() {
 
 function eatFood() {
   if (snake.snakeArr[0].x == randx && snake.snakeArr[0].y == randy) {
-    randx = Math.round(Math.random() * canvasWdith);
-    randy = Math.round(Math.random() * canvasHeight);
+    oldrandx = randx;
+    oldrandy = randy;
+
+    while (snake.snakeArr.find((a) => a.x === randx && a.y === randy)) {
+      randx = Math.round(Math.random() * canvasWdith);
+      randy = Math.round(Math.random() * canvasHeight);
+    }
     return true;
   }
   return false;
@@ -210,7 +218,6 @@ function draw() {
 
   drawFood();
   display.innerHTML = "";
-
   if (eatFood()) {
     snake.snakeArr.push({
       x: snake.snakeArr[snake.snakeArr.length - 1].x,
@@ -237,7 +244,7 @@ let snakeObj = {
   bodyYaxis: [125, 60, 65, 65, 20, 20, scale * 10, scale * 10],
   bodyDownLeftCorner: [0, 62, 65, 65, 20, 20, scale * 10, scale * 10],
 };
-function animatesnake(bodyPart, directon, x, y) {
+function snakeGraphics(bodyPart, directon, x, y) {
   //   context.fillStyle = "red";
   //   context.fillRect(20, 20, 200, 200);
   //   context.drawImage(snake.img, 0, 62, 65, 65, 20, 20, scale * 10, scale * 10);
@@ -316,7 +323,6 @@ function animatesnake(bodyPart, directon, x, y) {
         );
         break;
       case "RightDownCorner":
-        console.log("RIGHT DOWN");
         context.drawImage(
           snake.img,
           125,
@@ -469,6 +475,8 @@ function animatesnake(bodyPart, directon, x, y) {
 }
 
 function getOtherPartDir(original, other) {
+  if (original.x === other.x && original.y === other.y)
+    return snake.tailDirection;
   if (original.x === other.x) {
     if (original.y > other.y && Math.abs(original.y - other.y) > 1) {
       return "down";
@@ -478,7 +486,6 @@ function getOtherPartDir(original, other) {
       return "up";
     }
   } else {
-    console.log(Math.abs(original.x - other.x) > 1);
     if (original.x > other.x && Math.abs(original.x - other.x) > 1) {
       return "right";
     } else if (original.x < other.x && Math.abs(original.x - other.x) === 1) {
@@ -495,27 +502,26 @@ function drawSnake() {
       //head
       let prevState = getOtherPartDir(element, arr[index + 1]);
       if (prevState === "left") {
-        animatesnake("head", "ArrowRight", element.x, element.y);
+        snakeGraphics("head", "ArrowRight", element.x, element.y);
       } else if (prevState === "right") {
-        animatesnake("head", "ArrowLeft", element.x, element.y);
+        snakeGraphics("head", "ArrowLeft", element.x, element.y);
       } else if (prevState === "up") {
-        animatesnake("head", "ArrowDown", element.x, element.y);
+        snakeGraphics("head", "ArrowDown", element.x, element.y);
       } else if (prevState === "down") {
-        animatesnake("head", "ArrowUp", element.x, element.y);
+        snakeGraphics("head", "ArrowUp", element.x, element.y);
       }
     } else if (index === snake.snakeArr.length - 1) {
       //tail
       let nextState = getOtherPartDir(element, arr[index - 1]);
-      console.log("tail :", nextState);
+      snake.tailDirection = nextState;
       if (nextState === "right")
-        animatesnake("tail", "ArrowRight", element.x, element.y);
+        snakeGraphics("tail", "ArrowRight", element.x, element.y);
       else if (nextState === "left")
-        animatesnake("tail", "ArrowLeft", element.x, element.y);
+        snakeGraphics("tail", "ArrowLeft", element.x, element.y);
       else if (nextState === "up")
-        animatesnake("tail", "ArrowUp", element.x, element.y);
+        snakeGraphics("tail", "ArrowUp", element.x, element.y);
       else if (nextState === "down")
-        animatesnake("tail", "ArrowDown", element.x, element.y);
-      // else if ()
+        snakeGraphics("tail", "ArrowDown", element.x, element.y);
     } else if (index < snake.snakeArr.length - 1 && index > 0) {
       // body
       let prevState = getOtherPartDir(element, arr[index + 1]);
@@ -528,58 +534,58 @@ function drawSnake() {
         (prevState === "up" && nextState === "up")
       ) {
         // down
-        animatesnake("body", "Yaxis", element.x, element.y);
+        snakeGraphics("body", "Yaxis", element.x, element.y);
       } else if (
         (prevState === "left" && nextState === "right") ||
         (prevState === "left" && nextState === "left") ||
         (prevState === "right" && nextState === "right") ||
         (prevState === "right" && nextState === "left")
       ) {
-        animatesnake("body", "Xaxis", element.x, element.y);
+        snakeGraphics("body", "Xaxis", element.x, element.y);
       } else if (
         (prevState === "down" && nextState === "right") ||
         (prevState === "right" && nextState === "down")
       ) {
         // left Up corner
-        animatesnake("body", "LeftUpCorner", element.x, element.y);
+        snakeGraphics("body", "LeftUpCorner", element.x, element.y);
       } else if (
         (prevState === "down" && nextState === "left") ||
         (prevState === "left" && nextState === "down")
       ) {
         // right up corner
-        animatesnake("body", "RightUpCorner", element.x, element.y);
+        snakeGraphics("body", "RightUpCorner", element.x, element.y);
       } else if (
         (prevState === "up" && nextState === "right") ||
         (prevState === "right" && nextState === "up")
       ) {
         // down left corner
-        animatesnake("body", "LeftDownCorner", element.x, element.y);
+        snakeGraphics("body", "LeftDownCorner", element.x, element.y);
       } else if (
         (prevState === "up" && nextState === "left") ||
         (prevState === "left" && nextState === "up")
       ) {
         // down right corner
-        animatesnake("body", "RightDownCorner", element.x, element.y);
+        snakeGraphics("body", "RightDownCorner", element.x, element.y);
       }
     }
 
-    context.beginPath();
-    context.arc(
-      element.x * scale + scale / 2,
-      element.y * scale + scale / 2,
-      scale / 2,
-      0,
-      2 * Math.PI
-    );
-    context.stroke();
+    // context.beginPath();
+    // context.arc(
+    //   element.x * scale + scale / 2,
+    //   element.y * scale + scale / 2,
+    //   scale / 2,
+    //   0,
+    //   2 * Math.PI
+    // );
+    // context.stroke();
 
-    let pTag = document.createElement("p");
-    pTag.innerText = `x: ${element.x
-      .toString()
-      .padStart(2, "0")}, y: ${element.y
-      .toString()
-      .padStart(2, "0")}, index: ${index}`;
-    display.appendChild(pTag);
+    // let pTag = document.createElement("p");
+    // pTag.innerText = `x: ${element.x
+    //   .toString()
+    //   .padStart(2, "0")}, y: ${element.y
+    //   .toString()
+    //   .padStart(2, "0")}, index: ${index}`;
+    // display.appendChild(pTag);
 
     score.innerHTML = "";
     let pTag2 = document.createElement("span");
@@ -589,7 +595,11 @@ function drawSnake() {
   });
 }
 
+// 83 each second
 setInterval(() => {
+  let currTime = Date.now();
+  deltaTime = currTime - startTime;
+  startTime = currTime;
   gameLoop();
   draw();
-}, 120 - snake.snakeArr.length);
+}, 10);
