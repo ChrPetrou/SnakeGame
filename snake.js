@@ -5,13 +5,14 @@ var context = canvas.getContext("2d");
 
 let startTime = Date.now();
 let deltaTime = Date.now();
+let accDistance = 0;
 let x = 3;
 let y = 1;
 let dir = "ArrowRight";
 let scale = 20;
 let userInputs = [];
 let paused = false;
-var snake = {
+let snake = {
   img: null,
   directon: "ArrowRight",
   speed: 8,
@@ -22,15 +23,11 @@ var snake = {
     { x: x - 2, y, y },
     { x: x - 3, y, y },
   ],
+  EatenArr: [],
 };
-
 snake.img = new Image();
 snake.img.src = "./snake-graphics.png";
-let snakeArr = [
-  { x: x, y, y },
-  { x: x - 1, y, y },
-  { x: x - 2, y, y },
-];
+
 let prevX = snake.snakeArr[0].x;
 let prevY = snake.snakeArr[0].y;
 let randx = Math.round((Math.random() * canvas.width) / scale - 1);
@@ -39,6 +36,50 @@ let oldrandx = 0;
 let oldrandy = 0;
 const canvasWdith = Math.floor(canvas.width / scale) - 1;
 const canvasHeight = Math.floor(canvas.height / scale) - 1;
+
+document.addEventListener("keydown", (ev) => {
+  dir = ev.key;
+  if (
+    ev.key == "ArrowRight" ||
+    ev.key == "ArrowDown" ||
+    ev.key == "ArrowLeft" ||
+    ev.key == "ArrowUp" ||
+    ev.key == " "
+  ) {
+    if (userInputs.length > 2) {
+      userInputs = userInputs.slice(0, 3);
+    }
+    userInputs.push(dir);
+  }
+});
+
+// let startY;
+// let startX;
+// document.addEventListener("touchstart", function (event) {
+//   startY = event.touches[0].clientY;
+//   startX = event.touches[0].clientX;
+// });
+
+// document.addEventListener("touchmove", function (event) {
+//   var endY = event.touches[0].clientY;
+//   var endX = event.touches[0].clientX;
+//   var deltaY = endY - startY;
+//   var deltaX = endX - startX;
+//   console.log(Math.abs(deltaY, deltaX));
+//   if (Math.abs(deltaY > deltaX)) {
+//     if (deltaY > 0) {
+//       userInputs.push("ArrowDown");
+//     } else {
+//       userInputs.push("ArrowUp");
+//     }
+//   } else {
+//     if (deltaX < 0) {
+//       userInputs.push("ArrowLeft");
+//     } else {
+//       userInputs.push("ArrowRight");
+//     }
+//   }
+// });
 
 function resetSnake() {
   dir = "ArrowRight";
@@ -53,7 +94,6 @@ function gameOver(newPos) {
   return isSameIndex;
 }
 
-let accDistance = 0;
 function gameLoop() {
   prevX = snake.snakeArr[0].x;
   prevY = snake.snakeArr[0].y;
@@ -129,53 +169,30 @@ function gameLoop() {
       snake.snakeArr.pop();
       snake.snakeArr.unshift(newPos);
     }
+    if (eatFood()) {
+      snake.EatenArr.push({ x: snake.snakeArr[0].x, y: snake.snakeArr[0].y });
+    }
+
+    let tail = snake.snakeArr[snake.snakeArr.length - 1];
+    let beforeTail = snake.snakeArr[snake.snakeArr.length - 2];
+    if (
+      snake.EatenArr.length > 0 &&
+      mDistance(tail, snake.EatenArr[0]) === 1 &&
+      mDistance(beforeTail, snake.EatenArr[0]) === 2
+    ) {
+      console.log(snake.snakeArr);
+      snake.snakeArr.push(snake.EatenArr[0].x);
+      snake.EatenArr = snake.EatenArr.slice(1);
+    }
+
+    // snake.snakeArr.push;
     accDistance -= 1;
   }
 }
 
-document.addEventListener("keydown", (ev) => {
-  dir = ev.key;
-  if (
-    ev.key == "ArrowRight" ||
-    ev.key == "ArrowDown" ||
-    ev.key == "ArrowLeft" ||
-    ev.key == "ArrowUp" ||
-    ev.key == " "
-  ) {
-    if (userInputs.length > 2) {
-      userInputs = userInputs.slice(0, 3);
-    }
-    userInputs.push(dir);
-  }
-});
-
-// let startY;
-// let startX;
-// document.addEventListener("touchstart", function (event) {
-//   startY = event.touches[0].clientY;
-//   startX = event.touches[0].clientX;
-// });
-
-// document.addEventListener("touchmove", function (event) {
-//   var endY = event.touches[0].clientY;
-//   var endX = event.touches[0].clientX;
-//   var deltaY = endY - startY;
-//   var deltaX = endX - startX;
-//   console.log(Math.abs(deltaY, deltaX));
-//   if (Math.abs(deltaY > deltaX)) {
-//     if (deltaY > 0) {
-//       userInputs.push("ArrowDown");
-//     } else {
-//       userInputs.push("ArrowUp");
-//     }
-//   } else {
-//     if (deltaX < 0) {
-//       userInputs.push("ArrowLeft");
-//     } else {
-//       userInputs.push("ArrowRight");
-//     }
-//   }
-// });
+function mDistance(pos1, pos2) {
+  return Math.abs(pos2.x - pos1.x + pos2.y - pos1.y);
+}
 
 function drawgrid() {
   context.lineWidth = 1;
@@ -192,6 +209,27 @@ function drawgrid() {
     context.lineTo(canvas.width, y);
     context.stroke();
   }
+}
+
+// to debug snake graphics and each array element position
+function snakeDebug(element, index) {
+  context.beginPath();
+  context.arc(
+    element.x * scale + scale / 2,
+    element.y * scale + scale / 2,
+    scale / 2,
+    0,
+    2 * Math.PI
+  );
+  context.stroke();
+  let pTag = document.createElement("p");
+  pTag.innerText = `x: ${element?.x
+    .toString()
+    .padStart(2, "0")}, y: ${element?.y
+    .toString()
+    .padStart(2, "0")}, index: ${index}`;
+  display.appendChild(pTag);
+  // drawgrid();
 }
 
 function eatFood() {
@@ -225,7 +263,6 @@ function drawFood() {
 function drawUI() {
   if (paused) {
     context.fillStyle = "rgba(0,0,0,0.6)";
-    console.log(canvasWdith);
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "#fff";
     context.font = "bold 40px Arial";
@@ -236,7 +273,7 @@ function drawUI() {
 
   context.fillStyle = "#000";
   context.font = "16px Arial";
-  var text = `score:  ${snake.snakeArr.length - 4}`;
+  var text = `score:  ${snake.snakeArr.length + snake.EatenArr.length - 4}`;
   context.fillText(text, 10, canvas.height - 10);
 }
 
@@ -247,12 +284,7 @@ function draw() {
   // draw
   drawFood();
   display.innerHTML = "";
-  if (eatFood()) {
-    snake.snakeArr.push({
-      x: snake.snakeArr[snake.snakeArr.length - 1].x,
-      y: snake.snakeArr[snake.snakeArr.length - 1].y,
-    });
-  }
+
   drawSnake();
   drawUI();
 }
@@ -522,27 +554,10 @@ function getOtherPartDir(original, other) {
   }
 }
 
-// to debug snake graphics and each array element position
-function snakeDebug(element, index) {
-  context.beginPath();
-  context.arc(
-    element.x * scale + scale / 2,
-    element.y * scale + scale / 2,
-    scale / 2,
-    0,
-    2 * Math.PI
-  );
-  context.stroke();
-  let pTag = document.createElement("p");
-  pTag.innerText = `x: ${element.x.toString().padStart(2, "0")}, y: ${element.y
-    .toString()
-    .padStart(2, "0")}, index: ${index}`;
-  display.appendChild(pTag);
-  drawgrid();
-}
-
 function drawSnake() {
-  snake.snakeArr.map((element, index, arr) => {
+  for (let index = 0; index < snake.snakeArr.length; index++) {
+    let element = snake.snakeArr[index];
+    let arr = snake.snakeArr;
     if (index === 0) {
       //head
       let prevState = getOtherPartDir(element, arr[index + 1]);
@@ -613,16 +628,37 @@ function drawSnake() {
         snakeGraphics("body", "RightDownCorner", element.x, element.y);
       }
     }
-    // snakeDebug(element, index);
-  });
+    snakeDebug(element, index);
+  }
 }
 
 // 83 each second
-setInterval(() => {
-  let currTime = Date.now();
-  deltaTime = currTime - startTime;
-  console.log(deltaTime);
-  startTime = currTime;
-  gameLoop();
-  draw();
-}, 10);
+function startGame() {
+  intervalId = setInterval(() => {
+    snake.speed = 8;
+    let currTime = Date.now();
+    deltaTime = currTime - startTime;
+    startTime = currTime;
+    gameLoop();
+    draw();
+  }, 10);
+}
+
+function stopGame() {
+  clearInterval(intervalId);
+  paused = true;
+}
+
+// Add an event listener for visibilitychange
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    // Stop the interval and reset deltaTime when tab is hidden
+    stopGame();
+  } else {
+    // Restart the interval when tab is visible again
+    startGame();
+  }
+});
+
+// Start the game loop
+startGame();
