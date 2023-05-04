@@ -53,6 +53,7 @@ function gameOver(newPos) {
 function gameLoop() {
   prevX = snake.snakeArr[0].x;
   prevY = snake.snakeArr[0].y;
+  console.log(dir);
   switch (dir) {
     case "ArrowUp":
       if (
@@ -469,13 +470,18 @@ function animatesnake(bodyPart, directon, x, y) {
 
 function getOtherPartDir(original, other) {
   if (original.x === other.x) {
-    if (original.y < other.y) {
+    if (original.y > other.y && Math.abs(original.y - other.y) > 1) {
+      return "down";
+    } else if (original.y < other.y && Math.abs(original.y - other.y) === 1) {
       return "down";
     } else {
       return "up";
     }
   } else {
-    if (original.x < other.x) {
+    console.log(Math.abs(original.x - other.x) > 1);
+    if (original.x > other.x && Math.abs(original.x - other.x) > 1) {
+      return "right";
+    } else if (original.x < other.x && Math.abs(original.x - other.x) === 1) {
       return "right";
     } else {
       return "left";
@@ -499,27 +505,34 @@ function drawSnake() {
       }
     } else if (index === snake.snakeArr.length - 1) {
       //tail
-      if (element.y === arr[index - 1].y && element.x === arr[index - 1].x - 1)
+      let nextState = getOtherPartDir(element, arr[index - 1]);
+      console.log("tail :", nextState);
+      if (nextState === "right")
         animatesnake("tail", "ArrowRight", element.x, element.y);
-      if (element.y === arr[index - 1].y && element.x === arr[index - 1].x + 1)
+      else if (nextState === "left")
         animatesnake("tail", "ArrowLeft", element.x, element.y);
-      if (element.x === arr[index - 1].x && element.y === arr[index - 1].y + 1)
+      else if (nextState === "up")
         animatesnake("tail", "ArrowUp", element.x, element.y);
-      if (element.x === arr[index - 1].x && element.y === arr[index - 1].y - 1)
+      else if (nextState === "down")
         animatesnake("tail", "ArrowDown", element.x, element.y);
-      // body
+      // else if ()
     } else if (index < snake.snakeArr.length - 1 && index > 0) {
+      // body
       let prevState = getOtherPartDir(element, arr[index + 1]);
       let nextState = getOtherPartDir(element, arr[index - 1]);
-      console.log(prevState, nextState);
+
       if (
         (prevState === "up" && nextState === "down") ||
-        (prevState === "down" && nextState === "up")
+        (prevState === "down" && nextState === "up") ||
+        (prevState === "down" && nextState === "down") ||
+        (prevState === "up" && nextState === "up")
       ) {
         // down
         animatesnake("body", "Yaxis", element.x, element.y);
       } else if (
         (prevState === "left" && nextState === "right") ||
+        (prevState === "left" && nextState === "left") ||
+        (prevState === "right" && nextState === "right") ||
         (prevState === "right" && nextState === "left")
       ) {
         animatesnake("body", "Xaxis", element.x, element.y);
@@ -550,15 +563,15 @@ function drawSnake() {
       }
     }
 
-    // context.beginPath();
-    // context.arc(
-    //   element.x * scale + scale / 2,
-    //   element.y * scale + scale / 2,
-    //   scale / 2,
-    //   0,
-    //   2 * Math.PI
-    // );
-    // context.stroke();
+    context.beginPath();
+    context.arc(
+      element.x * scale + scale / 2,
+      element.y * scale + scale / 2,
+      scale / 2,
+      0,
+      2 * Math.PI
+    );
+    context.stroke();
 
     let pTag = document.createElement("p");
     pTag.innerText = `x: ${element.x
