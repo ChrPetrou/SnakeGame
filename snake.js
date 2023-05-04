@@ -149,21 +149,49 @@ document.addEventListener("keydown", (ev) => {
   }
 });
 
+// let startY;
+// let startX;
+// document.addEventListener("touchstart", function (event) {
+//   startY = event.touches[0].clientY;
+//   startX = event.touches[0].clientX;
+// });
+
+// document.addEventListener("touchmove", function (event) {
+//   var endY = event.touches[0].clientY;
+//   var endX = event.touches[0].clientX;
+//   var deltaY = endY - startY;
+//   var deltaX = endX - startX;
+//   console.log(Math.abs(deltaY, deltaX));
+//   if (Math.abs(deltaY > deltaX)) {
+//     if (deltaY > 0) {
+//       userInputs.push("ArrowDown");
+//     } else {
+//       userInputs.push("ArrowUp");
+//     }
+//   } else {
+//     if (deltaX < 0) {
+//       userInputs.push("ArrowLeft");
+//     } else {
+//       userInputs.push("ArrowRight");
+//     }
+//   }
+// });
+
 function drawgrid() {
-  //   context.lineWidth = 1;
-  //   var gridSize = 20;
-  //   for (let x = gridSize; x < canvas.width; x += gridSize) {
-  //     context.beginPath();
-  //     context.moveTo(x, 0);
-  //     context.lineTo(x, canvas.height);
-  //     context.stroke();
-  //   }
-  //   for (let y = gridSize; y < canvas.height; y += gridSize) {
-  //     context.beginPath();
-  //     context.moveTo(0, y);
-  //     context.lineTo(canvas.width, y);
-  //     context.stroke();
-  //   }
+  context.lineWidth = 1;
+  var gridSize = 20;
+  for (let x = gridSize; x < canvas.width; x += gridSize) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, canvas.height);
+    context.stroke();
+  }
+  for (let y = gridSize; y < canvas.height; y += gridSize) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(canvas.width, y);
+    context.stroke();
+  }
 }
 
 function eatFood() {
@@ -181,23 +209,6 @@ function eatFood() {
 }
 
 function drawFood() {
-  //   context.beginPath();
-  //   context.arc(
-  //     randx * scale + scale / 2,
-  //     randy * scale + scale / 2,
-  //     scale / 2,
-  //     0,
-  //     2 * Math.PI
-  //   );
-  //   context.stroke();
-  //   console.log(
-  //     randx * scale + scale / 2,
-  //     canvasWdith,
-  //     randy * scale + scale / 2,
-  //     canvasHeight
-  //   );
-  //   var img = document.getElementById("apple");
-  //   context.drawImage(img, randx * scale, randy * scale, scale, scale);
   context.drawImage(
     snake.img,
     0,
@@ -211,11 +222,29 @@ function drawFood() {
   );
 }
 
+function drawUI() {
+  if (paused) {
+    context.fillStyle = "rgba(0,0,0,0.6)";
+    console.log(canvasWdith);
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#fff";
+    context.font = "bold 40px Arial";
+    var text = "Paused!";
+    var textWidth = context.measureText(text).width;
+    context.fillText(text, (canvas.width - textWidth) / 2, canvas.height / 2);
+  }
+
+  context.fillStyle = "#000";
+  context.font = "16px Arial";
+  var text = `score:  ${snake.snakeArr.length - 4}`;
+  context.fillText(text, 10, canvas.height - 10);
+}
+
 function draw() {
   // clear
   context.clearRect(0, 0, canvas.width, canvas.height);
-  drawgrid();
 
+  // draw
   drawFood();
   display.innerHTML = "";
   if (eatFood()) {
@@ -224,8 +253,8 @@ function draw() {
       y: snake.snakeArr[snake.snakeArr.length - 1].y,
     });
   }
-  // draw
   drawSnake();
+  drawUI();
 }
 
 let snakeObj = {
@@ -244,11 +273,8 @@ let snakeObj = {
   bodyYaxis: [125, 60, 65, 65, 20, 20, scale * 10, scale * 10],
   bodyDownLeftCorner: [0, 62, 65, 65, 20, 20, scale * 10, scale * 10],
 };
-function snakeGraphics(bodyPart, directon, x, y) {
-  //   context.fillStyle = "red";
-  //   context.fillRect(20, 20, 200, 200);
-  //   context.drawImage(snake.img, 0, 62, 65, 65, 20, 20, scale * 10, scale * 10);
 
+function snakeGraphics(bodyPart, directon, x, y) {
   function drawBody() {
     switch (directon) {
       case "Yaxis":
@@ -496,6 +522,25 @@ function getOtherPartDir(original, other) {
   }
 }
 
+// to debug snake graphics and each array element position
+function snakeDebug(element, index) {
+  context.beginPath();
+  context.arc(
+    element.x * scale + scale / 2,
+    element.y * scale + scale / 2,
+    scale / 2,
+    0,
+    2 * Math.PI
+  );
+  context.stroke();
+  let pTag = document.createElement("p");
+  pTag.innerText = `x: ${element.x.toString().padStart(2, "0")}, y: ${element.y
+    .toString()
+    .padStart(2, "0")}, index: ${index}`;
+  display.appendChild(pTag);
+  drawgrid();
+}
+
 function drawSnake() {
   snake.snakeArr.map((element, index, arr) => {
     if (index === 0) {
@@ -568,30 +613,7 @@ function drawSnake() {
         snakeGraphics("body", "RightDownCorner", element.x, element.y);
       }
     }
-
-    // context.beginPath();
-    // context.arc(
-    //   element.x * scale + scale / 2,
-    //   element.y * scale + scale / 2,
-    //   scale / 2,
-    //   0,
-    //   2 * Math.PI
-    // );
-    // context.stroke();
-
-    // let pTag = document.createElement("p");
-    // pTag.innerText = `x: ${element.x
-    //   .toString()
-    //   .padStart(2, "0")}, y: ${element.y
-    //   .toString()
-    //   .padStart(2, "0")}, index: ${index}`;
-    // display.appendChild(pTag);
-
-    score.innerHTML = "";
-    let pTag2 = document.createElement("span");
-
-    pTag2.innerText = ` score: ${index - 3}`;
-    score.appendChild(pTag2);
+    // snakeDebug(element, index);
   });
 }
 
@@ -599,6 +621,7 @@ function drawSnake() {
 setInterval(() => {
   let currTime = Date.now();
   deltaTime = currTime - startTime;
+  console.log(deltaTime);
   startTime = currTime;
   gameLoop();
   draw();
