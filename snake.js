@@ -181,16 +181,17 @@ function gameLoop() {
       mDistance(beforeTail, snake.EatenArr[0]) === 2
     ) {
       console.log(snake.snakeArr);
-      snake.snakeArr.push(snake.EatenArr[0].x);
+      snake.snakeArr.push(snake.EatenArr[0]);
       snake.EatenArr = snake.EatenArr.slice(1);
     }
 
-    // snake.snakeArr.push;
     accDistance -= 1;
   }
 }
 
 function mDistance(pos1, pos2) {
+  console.log("tail:", pos1);
+  console.log("eatenfood:", pos2);
   return Math.abs(pos2.x - pos1.x + pos2.y - pos1.y);
 }
 
@@ -628,7 +629,7 @@ function drawSnake() {
         snakeGraphics("body", "RightDownCorner", element.x, element.y);
       }
     }
-    snakeDebug(element, index);
+    // snakeDebug(element, index);
   }
 }
 
