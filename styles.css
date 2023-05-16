@@ -1,9 +1,0 @@
-body {
-  text-align: center;
-  font-family: helvetica;
-  overflow: hidden;
-}
-canvas {
-  margin: auto;
-  border: 2px solid rgb(151, 149, 149);
-}
