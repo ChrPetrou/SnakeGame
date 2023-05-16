@@ -103,9 +103,9 @@ class Snake {
 
   controls() {
     if (this.userInputs.length === 0) return;
-    console.log(this.userInputs);
+
     let firstKey = this.userInputs.shift();
-    console.log(firstKey);
+
     switch (firstKey) {
       case "ArrowUp":
         if (this.directon !== "ArrowDown") this.directon = firstKey;
@@ -416,7 +416,7 @@ class Snake {
           this.snakeGraphics("bodyRightDownCorner", element.x, element.y);
         }
       }
-      this.snakeDebug(element, index);
+      // this.snakeDebug(element, index);
     }
   }
   snakeDebug(element, index) {
