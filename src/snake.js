@@ -110,6 +110,7 @@ class Snake {
   }
   controls() {
     let firstKey = userInputs.shift();
+
     switch (firstKey) {
       case "ArrowUp":
         if (snake.directon !== "ArrowDown") {

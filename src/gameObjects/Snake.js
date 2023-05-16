@@ -20,10 +20,11 @@ class Snake {
     this.userInputs = [];
     this.canvas = canvas;
     this.ctx = ctx;
-    this.scale = 10;
+    this.paused = false;
+    this.scale = 20;
   }
+
   resetSnake() {
-    dir = "ArrowRight";
     location.reload();
   }
   gameOver(newPos) {
@@ -33,13 +34,15 @@ class Snake {
     );
     return isSameIndex;
   }
+
   onUpdate(deltaTime) {
+    this.controls();
+    if (this.paused) return;
     let prevX = this.snakeArr[0].x;
     let prevY = this.snakeArr[0].y;
     this.accDistance += deltaTime * this.speed;
+
     if (this.accDistance > 1) {
-      // for(let i = 0; i)
-      this.controls();
       switch (this.directon) {
         case "ArrowUp":
           prevY -= 1;
@@ -56,18 +59,19 @@ class Snake {
         default:
           return;
       }
+
       //loop again from the other side of this.canvas
       if (this.canvas.height / this.scale <= prevY) {
         prevY = 0;
       }
       if (0 > prevY) {
-        prevY = this.canvas.height;
+        prevY = Math.floor(this.canvas.height / this.scale);
       }
       if (this.canvas.width / this.scale <= prevX) {
         prevX = 0;
       }
       if (0 > prevX) {
-        prevX = this.canvas.width;
+        prevX = Math.floor(this.canvas.width / this.scale) - 1;
       }
 
       let newPos = new Vector(prevX, prevY);
@@ -96,33 +100,48 @@ class Snake {
       this.accDistance -= 1;
     }
   }
+
   controls() {
+    if (this.userInputs.length === 0) return;
+    console.log(this.userInputs);
     let firstKey = this.userInputs.shift();
+    console.log(firstKey);
     switch (firstKey) {
       case "ArrowUp":
-        if (this.directon !== "ArrowDown") {
-          this.directon = firstKey;
-        }
+        if (this.directon !== "ArrowDown") this.directon = firstKey;
         break;
       case "ArrowDown":
-        if (this.directon !== "ArrowUp") {
-          this.directon = firstKey;
-        }
+        if (this.directon !== "ArrowUp") this.directon = firstKey;
         break;
       case "ArrowRight":
-        if (this.directon !== "ArrowLeft") {
-          this.directon = firstKey;
-        }
+        if (this.directon !== "ArrowLeft") this.directon = firstKey;
         break;
       case "ArrowLeft":
-        if (this.directon !== "ArrowRight") {
-          this.directon = firstKey;
-        }
+        if (this.directon !== "ArrowRight") this.directon = firstKey;
         break;
       case " ":
+        this.paused = !this.paused;
         this.accDistance = 0;
         break;
     }
+  }
+  Inputs() {
+    document.addEventListener("keydown", (ev) => {
+      let dir = ev.key;
+
+      if (
+        ev.key == "ArrowRight" ||
+        ev.key == "ArrowDown" ||
+        ev.key == "ArrowLeft" ||
+        ev.key == "ArrowUp" ||
+        ev.key == " "
+      ) {
+        if (this.userInputs.length > 2) {
+          this.userInputs = this.userInputs.slice(0, 3);
+        }
+        this.userInputs.push(dir);
+      }
+    });
   }
   snakeGraphics(bodyPartDirecton, x, y) {
     switch (bodyPartDirecton) {
@@ -397,7 +416,30 @@ class Snake {
           this.snakeGraphics("bodyRightDownCorner", element.x, element.y);
         }
       }
+      this.snakeDebug(element, index);
     }
+  }
+  snakeDebug(element, index) {
+    this.ctx.beginPath();
+    this.ctx.arc(
+      element.x * this.scale + this.scale / 2,
+      element.y * this.scale + this.scale / 2,
+      this.scale / 2,
+      0,
+      2 * Math.PI
+    );
+    this.ctx.stroke();
+    // if (index === 0) console.log(element.x, element.y);
+    // let pTag = document.createElement("p");
+    // if (pTag) {
+    //   pTag.innerText = `x: ${element?.x
+    //     .toString()
+    //     .padStart(2, "0")}, y: ${element?.y
+    //     .toString()
+    //     .padStart(2, "0")}, index: ${index}`;
+    //   display.appendChild(pTag);
+    // }
+    // drawgrid();
   }
 }
 

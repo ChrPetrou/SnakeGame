@@ -17,16 +17,19 @@ window.onload = function () {
   let fps = 0;
   let snake = new Snake(context, canvas);
   init(canvas, context);
+  snake.Inputs();
+
   function interval(timeStamp) {
     deltaTime = (timeStamp - oldTimestamp) / 1000;
+
     oldTimestamp = timeStamp;
     fps = Math.floor(1 / deltaTime);
     context.clearRect(0, 0, canvas.width, canvas.height);
+    snake.onUpdate(deltaTime);
+    snake.drawSnake();
 
-    // snake.onUpdate(deltaTime);
-    // snake.drawSnake();
-    gameloop(deltaTime);
-    drawLoop();
+    // gameloop(deltaTime);
+    // drawLoop();
     window.requestAnimationFrame(interval);
   }
   window.requestAnimationFrame(interval);
