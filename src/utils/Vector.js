@@ -7,7 +7,6 @@ class Vector {
     return Math.abs(otherPos.x - this.x) + Math.abs(otherPos.y - this.y);
   }
   getDir(other) {
-    // if (this.x === other.x && this.y === other.y) return this.tailDirection;
     if (this.x === other.x) {
       if (this.y > other.y && Math.abs(this.y - other.y) > 1) {
         return "down";

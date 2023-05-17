@@ -2,7 +2,7 @@ import Vector from "../utils/Vector";
 import snakeSprite from "../images/snake-graphics.png";
 
 class Snake {
-  constructor(ctx, canvas) {
+  constructor(ctx, canvas, apple) {
     this.img = new Image();
     this.img.src = snakeSprite;
     this.directon = "ArrowRight";
@@ -15,6 +15,7 @@ class Snake {
       new Vector(0, 1),
     ];
     this.eatenArr = [];
+    this.apple = apple;
     this.extendTail = null;
     this.accDistance = 0;
     this.userInputs = [];
@@ -34,15 +35,14 @@ class Snake {
     );
     return isSameIndex;
   }
-
-  onUpdate(deltaTime) {
-    this.controls();
-    if (this.paused) return;
+  onUpdate(deltaTime, apple) {
     let prevX = this.snakeArr[0].x;
     let prevY = this.snakeArr[0].y;
     this.accDistance += deltaTime * this.speed;
 
     if (this.accDistance > 1) {
+      this.controls();
+      if (this.paused) return;
       switch (this.directon) {
         case "ArrowUp":
           prevY -= 1;
@@ -82,10 +82,13 @@ class Snake {
         this.snakeArr.pop();
         this.snakeArr.unshift(newPos);
       }
-      //   if (eatFood()) {
-      //     this.eatenArr.push({ x: this.snakeArr[0].x, y: this.snakeArr[0].y });
-      //   }
+      //eat food
+      if (this.snakeArr[0].mDistance(apple.pos) === 0) {
+        this.eatenArr.push(new Vector(this.snakeArr[0].x, this.snakeArr[0].y));
+        apple.regenerate();
+      }
       if (this.extendTail) {
+        console.log(this.extendTail);
         this.snakeArr.push(this.extendTail);
         this.extendTail = null;
       }
@@ -361,7 +364,6 @@ class Snake {
       } else if (index === this.snakeArr.length - 1) {
         //tail
         let nextState = element.getDir(arr[index - 1]);
-        this.tailDirection = nextState;
         if (nextState === "right")
           this.snakeGraphics("tailArrowRight", element.x, element.y);
         else if (nextState === "left")
