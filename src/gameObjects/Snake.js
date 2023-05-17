@@ -65,7 +65,7 @@ class Snake {
         prevY = 0;
       }
       if (0 > prevY) {
-        prevY = Math.floor(this.canvas.height / this.scale);
+        prevY = Math.floor(this.canvas.height / this.scale) - 1;
       }
       if (this.canvas.width / this.scale <= prevX) {
         prevX = 0;
